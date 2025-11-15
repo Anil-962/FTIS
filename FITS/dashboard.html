@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTIS - AI-Assisted Fever Diagnostics & Triage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.plot.ly/plotly-latest.min.css" rel="stylesheet">
+    <style>
+        /* Hero Section Styles */
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+
+        .hero-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://www.google.com/search?q=medical+ai+background&tbm=isch&ved=2ahUKEwjR4YyH7Z6AAxV7wQIHHZ3YB0QQ2-cCegQIABAA&oq=medical+ai+background&gs_lcp=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeMgYIABAIEB4yBggAEAgQHjIGCAAQCBAeMgYIABAIEB4yBggAEAgQHjIGCAAQCBAeMgYIABAIEB46BAgjECc6BwgAEIoFEEM6CAgAEIAEELEDOgsIABCABBCxAxCDAToECAAQQ1C8B1j8GmC4HWgAcAB4AIABU4gB3wOSAQE1mAEAoAEBqgELZ3dzLXdpei1pbWfAAQE&sclient=img&ei=H7e6ZJX0B5uF4t4P5f2R2A0&bih=754&biw=1536#imgrc=9V2qZ8X5X8hQPM');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .hero-card .card-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-image-container {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-image-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-image-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 110, 253, 0.8);
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Additional Styles */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+        }
+
+        /* Word spacing improvements */
+        .hero-title {
+            letter-spacing: 0.5px;
+            word-spacing: 1px;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            letter-spacing: 0.3px;
+            word-spacing: 0.8px;
+            line-height: 1.5;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .hero-image {
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-image {
+                height: 100px;
+            }
+            
+            .display-4 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>
+                FTIS - AI Fever Diagnostics & Triage
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt me-1"></i>AI Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="patient-triage.html">
+                            <i class="fas fa-diagnoses me-1"></i>AI Diagnostics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="doctor-dashboard.html">
+                            <i class="fas fa-user-md me-1"></i>Clinical Review
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chatbot.html">
+                            <i class="fas fa-comment-medical me-1"></i>Medical Assistant
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-gradient-primary text-white hero-card">
+                    <div class="card-body py-5 position-relative">
+                        <!-- Background Image -->
+                        <div class="hero-bg-overlay"></div>
+                        
+                        <!-- Content -->
+                        <div class="row align-items-center">
+                            <!-- Text Content -->
+                            <div class="col-lg-6 text-center text-lg-start">
+                                <h1 class="display-4 mb-3 hero-title">
+                                    <i class="fas fa-robot me-3"></i>
+                                    AI-Assisted Fever Diagnostics & Triage
+                                </h1>
+                                <p class="lead mb-4 hero-subtitle">Novel artificial intelligence system for rapid fever assessment and priority classification</p>
+                                <div class="mb-4">
+                                    <span class="badge bg-light text-primary fs-6 me-2">Machine Learning</span>
+                                    <span class="badge bg-light text-primary fs-6 me-2">Diagnostic AI</span>
+                                    <span class="badge bg-light text-primary fs-6 me-2">Triage System</span>
+            
+                                </div>
+                            </div>
+                            
+                            <!-- Image Content -->
+                            <div class="col-lg-6 mt-4 mt-lg-0">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="hero-image-container">
+                                            <img src="./images/med.jpg" 
+                                                 alt="AI and Healthcare" class="hero-image rounded">
+                                            <div class="hero-image-caption">AI Diagnostics</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="hero-image-container">
+                                            <img src="./images/st.jpg" 
+                                                 alt="Medical Triage" class="hero-image rounded">
+                                            <div class="hero-image-caption">Smart Triage</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="hero-image-container">
+                                            <img src="./images/AI.jpg" 
+                                                 alt="Doctor using AI system" class="hero-image rounded">
+                                            <div class="hero-image-caption">Clinical AI Assistant</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Problem Statement Highlight -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bullseye me-2"></i>
+                            AI-Assisted Diagnostics & Triage
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">🎯 AI-Assisted Diagnostics</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Multi-disease classification (Dengue, Malaria, Typhoid, etc.)</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Probability-based diagnosis with confidence scores</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Symptom pattern recognition using ML</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Explainable AI with feature importance</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">🚨 Intelligent Triage System</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Automated severity scoring algorithm</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Four-level risk classification</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Emergency case detection</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Actionable clinical recommendations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-brain fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="totalCases">1,247</h4>
+                                <small>AI Diagnoses</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="criticalCases">89</h4>
+                                <small>Critical Triage</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="accuracyRate">94.2%</h4>
+                                <small>AI Accuracy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="avgTime">2.1min</h4>
+                                <small>Avg Triage Time</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-bell fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="alertsToday">15</h4>
+                                <small>Today's Alerts</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6 mb-3">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-stethoscope fa-2x me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="doctorReviews">1,090</h4>
+                                <small>Clinical Reviews</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Diagnostics & Triage Charts -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-robot me-2"></i>
+                            AI Diagnostic Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="diseaseChart"></div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                AI model predicts fever etiology with 94.2% accuracy on test data
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-ol me-2"></i>
+                            Triage Priority Levels
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="triageChart"></div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Automated triage scoring categorizes cases by clinical urgency
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Performance -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            AI Diagnostic Accuracy Trend
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="accuracyChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>
+                            Triage Response Times
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="responseTimeChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical AI Alerts -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bell me-2"></i>
+                            Critical AI Alerts - Requiring Immediate Attention
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertsContainer">
+                            <div class="alert alert-danger">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="alert-heading mb-1">CRITICAL: Case #1245 - Suspected Severe Malaria</h6>
+                                        <p class="mb-1">Temperature: 40.2°C | Triage Score: 14/15 | AI Confidence: 92%</p>
+                                        <small class="text-muted">Detected 5 minutes ago - Requires emergency care</small>
+                                    </div>
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i> Review
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-circle fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="alert-heading mb-1">HIGH PRIORITY: Case #1247 - Suspected Dengue Hemorrhagic</h6>
+                                        <p class="mb-1">Temperature: 39.8°C | Platelets: 85k | AI Confidence: 88%</p>
+                                        <small class="text-muted">Detected 12 minutes ago - Urgent physician review needed</small>
+                                    </div>
+                                    <button class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i> Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access - AI Diagnostics & Triage -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-rocket me-2"></i>
+                            AI Diagnostics & Triage Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="patient-triage.html" class="btn btn-primary btn-lg w-100 h-100 py-4">
+                                    <i class="fas fa-diagnoses fa-3x mb-3"></i><br>
+                                    <strong>AI Diagnostics</strong><br>
+                                    <small>Run Fever Assessment</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="doctor-dashboard.html" class="btn btn-success btn-lg w-100 h-100 py-4">
+                                    <i class="fas fa-user-md fa-3x mb-3"></i><br>
+                                    <strong>Clinical Review</strong><br>
+                                    <small>Manage Triage Cases</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="chatbot.html" class="btn btn-info btn-lg w-100 h-100 py-4">
+                                    <i class="fas fa-robot fa-3x mb-3"></i><br>
+                                    <strong>AI Assistant</strong><br>
+                                    <small>Medical Knowledge</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-warning btn-lg w-100 h-100 py-4" onclick="runDemo()">
+                                    <i class="fas fa-play-circle fa-3x mb-3"></i><br>
+                                    <strong>Live Demo</strong><br>
+                                    <small>See AI in Action</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Technology Stack -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microchip me-2"></i>
+                            AI Technology Stack
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-project-diagram fa-2x text-primary mb-2"></i>
+                                <h6>Random Forest</h6>
+                                <small class="text-muted">Multi-class Classification</small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-chart-bar fa-2x text-primary mb-2"></i>
+                                <h6>SHAP Analysis</h6>
+                                <small class="text-muted">Explainable AI</small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-calculator fa-2x text-primary mb-2"></i>
+                                <h6>Triage Algorithm</h6>
+                                <small class="text-muted">Severity Scoring</small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-database fa-2x text-primary mb-2"></i>
+                                <h6>Synthetic Data</h6>
+                                <small class="text-muted">Training Dataset</small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-brain fa-2x text-primary mb-2"></i>
+                                <h6>ML Pipeline</h6>
+                                <small class="text-muted">End-to-End AI</small>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <h6>Clinical Safety</h6>
+                                <small class="text-muted">Risk Management</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>FTIS - AI-Assisted Fever Diagnostics & Triage System</h6>
+                    <p class="mb-0 small">Novel AI tool for fever diagnosis and triage</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-0 small">
+                        <i class="fas fa-robot me-1"></i>
+                        AI-Powered Clinical Decision Support
+                    </p>
+                    <p class="mb-0 small">Hackathon Project - Medical AI v1.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Demo Modal -->
+    <div class="modal fade" id="demoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-play-circle me-2"></i>
+                        FTIS AI Demo - Fever Diagnostics & Triage
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">AI Diagnostic Demo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>Experience our AI system diagnosing fever cases:</p>
+                                    <button class="btn btn-success w-100 mb-2" onclick="runDemoCase('dengue')">
+                                        <i class="fas fa-bug me-2"></i>Dengue Case
+                                    </button>
+                                    <button class="btn btn-warning w-100 mb-2" onclick="runDemoCase('malaria')">
+                                        <i class="fas fa-mosquito me-2"></i>Malaria Case
+                                    </button>
+                                    <button class="btn btn-danger w-100" onclick="runDemoCase('critical')">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Critical Case
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Triage System Demo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>See automated triage in action:</p>
+                                    <button class="btn btn-info w-100 mb-2" onclick="showTriageWorkflow()">
+                                        <i class="fas fa-list-ol me-2"></i>Triage Workflow
+                                    </button>
+                                    <button class="btn btn-primary w-100" onclick="showAIExplanation()">
+                                        <i class="fas fa-brain me-2"></i>AI Explanation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Demo functionality
+        function runDemo() {
+            const demoModal = new bootstrap.Modal(document.getElementById('demoModal'));
+            demoModal.show();
+        }
+
+        function runDemoCase(caseType) {
+            window.location.href = `patient-triage.html?demo=${caseType}`;
+        }
+
+        function showTriageWorkflow() {
+            alert('Triage Workflow:\n1. Symptom Input → 2. AI Analysis → 3. Severity Scoring → 4. Priority Assignment → 5. Clinical Action');
+        }
+
+        function showAIExplanation() {
+            alert('AI Explanation:\nOur system uses Random Forest ML to analyze 10+ clinical features and provide:\n- Disease probabilities\n- Triage scores\n- Feature importance\n- Clinical recommendations');
+        }
+
+        // Enhanced dashboard initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set static demo values aligned with problem statement
+            document.getElementById('accuracyRate').textContent = '94.2%';
+            document.getElementById('avgTime').textContent = '2.1min';
+            document.getElementById('alertsToday').textContent = '15';
+            document.getElementById('doctorReviews').textContent = '1,090';
+
+            // Initialize enhanced charts
+            if (typeof createEnhancedCharts === 'function') {
+                createEnhancedCharts();
+            }
+        });
+
+        // Mock chart creation function
+        function createEnhancedCharts() {
+            // Disease Distribution Chart
+            const diseaseData = [{
+                values: [35, 25, 20, 10, 10],
+                labels: ['Dengue', 'Malaria', 'Typhoid', 'Viral Fever', 'Other'],
+                type: 'pie',
+                marker: {
+                    colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }
+            }];
+            
+            const diseaseLayout = {
+                height: 300,
+                showlegend: true,
+                legend: {
+                    orientation: "h",
+                    y: -0.1
+                }
+            };
+            
+            Plotly.newPlot('diseaseChart', diseaseData, diseaseLayout, {displayModeBar: false});
+            
+            // Triage Priority Chart
+            const triageData = [{
+                x: ['Critical', 'High', 'Medium', 'Low'],
+                y: [89, 156, 542, 460],
+                type: 'bar',
+                marker: {
+                    color: ['#DC3545', '#FD7E14', '#FFC107', '#20C997']
+                }
+            }];
+            
+            const triageLayout = {
+                height: 300,
+                xaxis: {title: 'Priority Level'},
+                yaxis: {title: 'Number of Cases'}
+            };
+            
+            Plotly.newPlot('triageChart', triageData, triageLayout, {displayModeBar: false});
+            
+            // Accuracy Trend Chart
+            const accuracyData = [{
+                x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                y: [88.5, 89.2, 91.7, 92.4, 93.8, 94.2],
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: '#198754', width: 3},
+                marker: {size: 8}
+            }];
+            
+            const accuracyLayout = {
+                height: 300,
+                xaxis: {title: 'Month'},
+                yaxis: {title: 'Accuracy %', range: [85, 100]}
+            };
+            
+            Plotly.newPlot('accuracyChart', accuracyData, accuracyLayout, {displayModeBar: false});
+            
+            // Response Time Chart
+            const responseData = [{
+                x: ['Critical', 'High', 'Medium', 'Low'],
+                y: [1.2, 2.5, 3.8, 5.2],
+                type: 'bar',
+                marker: {
+                    color: ['#DC3545', '#FD7E14', '#FFC107', '#20C997']
+                }
+            }];
+            
+            const responseLayout = {
+                height: 300,
+                xaxis: {title: 'Priority Level'},
+                yaxis: {title: 'Response Time (minutes)'}
+            };
+            
+            Plotly.newPlot('responseTimeChart', responseData, responseLayout, {displayModeBar: false});
+        }
+    </script>
+</body>
+</html>

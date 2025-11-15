@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Triage - FTIS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+        .btn {
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+        }
+        .risk-level {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .risk-low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .risk-moderate {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .risk-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .risk-critical {
+            background-color: #721c24;
+            color: white;
+        }
+        .diagnosis-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .symptom-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 0.85rem;
+        }
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .analysis-step {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .disease-match {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-thermometer-half me-2"></i>
+                FTIS - Patient Triage
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="dashboard.html">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Patient Form -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-user-injured me-2"></i>Patient Assessment</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="patientForm">
+                            <!-- Patient Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-user me-2"></i>Patient Information
+                                    </h5>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Patient Name</label>
+                                    <input type="text" class="form-control" id="patientName" placeholder="Optional">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="patientAge" min="1" max="120" placeholder="Optional">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Gender</label>
+                                    <select class="form-control" id="patientGender">
+                                        <option value="">Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Vital Signs -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-heartbeat me-2"></i>Vital Signs
+                                    </h5>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Temperature (°C)</label>
+                                    <input type="number" class="form-control" id="temperature" 
+                                           min="36" max="42" step="0.1" value="38.5" required>
+                                    <div class="form-text">Normal: 36.5°C - 37.5°C</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Fever Duration (Days)</label>
+                                    <input type="number" class="form-control" id="durationDays" 
+                                           min="1" max="14" value="2" required>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Platelet Count (x10³/μL)</label>
+                                    <input type="number" class="form-control" id="plateletCount" 
+                                           min="20" max="400" value="250">
+                                    <div class="form-text">Normal: 150-400 x10³/μL</div>
+                                </div>
+                            </div>
+
+                            <!-- Symptoms -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-stethoscope me-2"></i>Symptoms
+                                    </h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="headache">
+                                        <label class="form-check-label">Headache</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="bodyPain">
+                                        <label class="form-check-label">Body Pain</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="rash">
+                                        <label class="form-check-label">Skin Rash</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="nauseaVomiting">
+                                        <label class="form-check-label">Nausea/Vomiting</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="breathingDifficulty">
+                                        <label class="form-check-label">Breathing Difficulty</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="jointPain">
+                                        <label class="form-check-label">Joint Pain</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="fatigue">
+                                        <label class="form-check-label">Fatigue</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="bleeding">
+                                        <label class="form-check-label">Bleeding</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Factors -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Risk Factors
+                                    </h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="travelHistory">
+                                        <label class="form-check-label">Recent Travel</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="contactWithSick">
+                                        <label class="form-check-label">Contact with Sick Person</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="mosquitoExposure">
+                                        <label class="form-check-label">Mosquito Exposure</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="chronicDisease">
+                                        <label class="form-check-label">Chronic Disease</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3">
+                                        <i class="fas fa-stethoscope me-2"></i>
+                                        Run Triage Assessment
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Demo Cases -->
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-vial me-2"></i>Quick Test Cases</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-success w-100" onclick="loadDemoCase('dengue')">
+                                    Dengue Case
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-warning w-100" onclick="loadDemoCase('malaria')">
+                                    Malaria Case
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-danger w-100" onclick="loadDemoCase('covid')">
+                                    COVID-19 Case
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="col-lg-6">
+                <div id="resultsPanel" style="display: none;">
+                    <!-- Results will be loaded here by JavaScript -->
+                </div>
+                
+                <div id="emptyState" class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-stethoscope fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Assessment Yet</h4>
+                        <p class="text-muted">Fill out the patient assessment form and click "Run Triage Assessment" to see results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Disease database with symptoms and characteristics
+        const diseaseDatabase = {
+            dengue: {
+                name: "Dengue Fever",
+                commonSymptoms: ["fever", "headache", "bodyPain", "rash", "nauseaVomiting", "fatigue"],
+                criticalSymptoms: ["bleeding", "plateletDrop"],
+                riskFactors: ["mosquitoExposure", "travelHistory"],
+                plateletThreshold: 100,
+                temperatureRange: { min: 38.5, max: 40 },
+                typicalDuration: { min: 2, max: 7 },
+                severity: "moderate",
+                description: "A mosquito-borne viral infection causing flu-like illness that can develop into severe dengue.",
+                treatment: "Rest, hydration, pain relievers (avoid aspirin), and monitoring for complications.",
+                urgency: "Seek medical attention if symptoms worsen or bleeding occurs."
+            },
+            malaria: {
+                name: "Malaria",
+                commonSymptoms: ["fever", "headache", "bodyPain", "nauseaVomiting", "fatigue"],
+                criticalSymptoms: ["breathingDifficulty", "confusion"],
+                riskFactors: ["mosquitoExposure", "travelHistory"],
+                plateletThreshold: 150,
+                temperatureRange: { min: 38, max: 41 },
+                typicalDuration: { min: 1, max: 4 },
+                severity: "moderate",
+                description: "A parasitic disease transmitted through mosquito bites, characterized by cyclical fevers.",
+                treatment: "Antimalarial medications based on parasite type and severity.",
+                urgency: "Immediate treatment is necessary to prevent complications."
+            },
+            covid: {
+                name: "COVID-19",
+                commonSymptoms: ["fever", "headache", "bodyPain", "fatigue", "breathingDifficulty"],
+                criticalSymptoms: ["severeBreathingDifficulty", "chestPain"],
+                riskFactors: ["contactWithSick", "travelHistory"],
+                plateletThreshold: 150,
+                temperatureRange: { min: 37.5, max: 39 },
+                typicalDuration: { min: 5, max: 14 },
+                severity: "variable",
+                description: "Respiratory illness caused by coronavirus, ranging from mild to severe.",
+                treatment: "Symptomatic treatment, rest, isolation, and monitoring for respiratory distress.",
+                urgency: "Seek emergency care for breathing difficulties or persistent chest pain."
+            },
+            typhoid: {
+                name: "Typhoid Fever",
+                commonSymptoms: ["fever", "headache", "bodyPain", "nauseaVomiting", "fatigue"],
+                criticalSymptoms: ["intestinalBleeding", "perforation"],
+                riskFactors: ["travelHistory", "contaminatedFood"],
+                plateletThreshold: 150,
+                temperatureRange: { min: 39, max: 40 },
+                typicalDuration: { min: 7, max: 14 },
+                severity: "moderate",
+                description: "Bacterial infection spread through contaminated food or water.",
+                treatment: "Antibiotics and supportive care with attention to hydration.",
+                urgency: "Medical evaluation needed for proper antibiotic treatment."
+            },
+            influenza: {
+                name: "Influenza (Flu)",
+                commonSymptoms: ["fever", "headache", "bodyPain", "fatigue"],
+                criticalSymptoms: ["breathingDifficulty"],
+                riskFactors: ["contactWithSick"],
+                plateletThreshold: 150,
+                temperatureRange: { min: 38, max: 39.5 },
+                typicalDuration: { min: 3, max: 7 },
+                severity: "mild",
+                description: "Viral respiratory infection with sudden onset of symptoms.",
+                treatment: "Rest, fluids, antiviral medications if started early.",
+                urgency: "Most cases resolve on their own; seek care if symptoms worsen."
+            }
+        };
+
+        // DOM Elements
+        const patientForm = document.getElementById('patientForm');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const emptyState = document.getElementById('emptyState');
+
+        // Form submission handler
+        patientForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            runTriageAssessment();
+        });
+
+        // Run triage assessment
+        function runTriageAssessment() {
+            // Show loading state
+            showLoadingState();
+            
+            // Simulate API processing delay
+            setTimeout(() => {
+                // Collect patient data
+                const patientData = collectPatientData();
+                
+                // Analyze symptoms and generate diagnosis
+                const analysis = analyzeSymptoms(patientData);
+                
+                // Display results
+                displayResults(patientData, analysis);
+            }, 1500);
+        }
+
+        // Collect patient data from form
+        function collectPatientData() {
+            const symptoms = [];
+            const riskFactors = [];
+            
+            // Collect symptoms
+            if (document.getElementById('headache').checked) symptoms.push('headache');
+            if (document.getElementById('bodyPain').checked) symptoms.push('bodyPain');
+            if (document.getElementById('rash').checked) symptoms.push('rash');
+            if (document.getElementById('nauseaVomiting').checked) symptoms.push('nauseaVomiting');
+            if (document.getElementById('breathingDifficulty').checked) symptoms.push('breathingDifficulty');
+            if (document.getElementById('jointPain').checked) symptoms.push('jointPain');
+            if (document.getElementById('fatigue').checked) symptoms.push('fatigue');
+            if (document.getElementById('bleeding').checked) symptoms.push('bleeding');
+            
+            // Collect risk factors
+            if (document.getElementById('travelHistory').checked) riskFactors.push('travelHistory');
+            if (document.getElementById('mosquitoExposure').checked) riskFactors.push('mosquitoExposure');
+            if (document.getElementById('contactWithSick').checked) riskFactors.push('contactWithSick');
+            if (document.getElementById('chronicDisease').checked) riskFactors.push('chronicDisease');
+            
+            return {
+                name: document.getElementById('patientName').value,
+                age: document.getElementById('patientAge').value,
+                gender: document.getElementById('patientGender').value,
+                temperature: parseFloat(document.getElementById('temperature').value),
+                durationDays: parseInt(document.getElementById('durationDays').value),
+                plateletCount: parseInt(document.getElementById('plateletCount').value),
+                symptoms: symptoms,
+                riskFactors: riskFactors
+            };
+        }
+
+        // Analyze symptoms and match with diseases
+        function analyzeSymptoms(patientData) {
+            const matches = [];
+            
+            // Check each disease in the database
+            for (const diseaseKey in diseaseDatabase) {
+                const disease = diseaseDatabase[diseaseKey];
+                let matchScore = 0;
+                let maxScore = disease.commonSymptoms.length + disease.riskFactors.length + 3; // +3 for temp, duration, platelets
+                
+                // Check symptom matches
+                disease.commonSymptoms.forEach(symptom => {
+                    if (patientData.symptoms.includes(symptom)) {
+                        matchScore += 1;
+                    }
+                });
+                
+                // Check risk factor matches
+                disease.riskFactors.forEach(risk => {
+                    if (patientData.riskFactors.includes(risk)) {
+                        matchScore += 1;
+                    }
+                });
+                
+                // Check temperature match
+                if (patientData.temperature >= disease.temperatureRange.min && 
+                    patientData.temperature <= disease.temperatureRange.max) {
+                    matchScore += 1;
+                }
+                
+                // Check duration match
+                if (patientData.durationDays >= disease.typicalDuration.min && 
+                    patientData.durationDays <= disease.typicalDuration.max) {
+                    matchScore += 1;
+                }
+                
+                // Check platelet count
+                if (patientData.plateletCount < disease.plateletThreshold) {
+                    matchScore += 1;
+                }
+                
+                // Calculate match percentage
+                const matchPercentage = (matchScore / maxScore) * 100;
+                
+                // Only include diseases with significant match
+                if (matchPercentage >= 30) {
+                    matches.push({
+                        disease: disease,
+                        matchPercentage: matchPercentage,
+                        critical: hasCriticalSymptoms(patientData, disease)
+                    });
+                }
+            }
+            
+            // Sort by match percentage (highest first)
+            matches.sort((a, b) => b.matchPercentage - a.matchPercentage);
+            
+            return {
+                matches: matches,
+                riskLevel: calculateRiskLevel(patientData, matches),
+                recommendations: generateRecommendations(patientData, matches)
+            };
+        }
+
+        // Check for critical symptoms
+        function hasCriticalSymptoms(patientData, disease) {
+            const criticalSymptomsPresent = disease.criticalSymptoms.some(symptom => 
+                patientData.symptoms.includes(symptom)
+            );
+            
+            const lowPlatelets = patientData.plateletCount < 50;
+            const highFever = patientData.temperature > 40;
+            
+            return criticalSymptomsPresent || lowPlatelets || highFever;
+        }
+
+        // Calculate overall risk level
+        function calculateRiskLevel(patientData, matches) {
+            if (matches.length === 0) return "low";
+            
+            const topMatch = matches[0];
+            
+            // Check for critical conditions
+            if (topMatch.critical) return "critical";
+            
+            // High fever or very low platelets
+            if (patientData.temperature > 39.5 || patientData.plateletCount < 80) return "high";
+            
+            // Moderate risk for high match percentage
+            if (topMatch.matchPercentage > 70) return "moderate";
+            
+            return "low";
+        }
+
+        // Generate recommendations based on analysis
+        function generateRecommendations(patientData, matches) {
+            const recommendations = [];
+            
+            if (matches.length > 0) {
+                const topMatch = matches[0];
+                
+                if (topMatch.critical) {
+                    recommendations.push("Immediate medical attention required");
+                    recommendations.push("Consider emergency department visit");
+                } else if (topMatch.matchPercentage > 70) {
+                    recommendations.push("Schedule appointment with healthcare provider");
+                    recommendations.push("Monitor symptoms closely");
+                } else {
+                    recommendations.push("Consult with healthcare provider for evaluation");
+                }
+                
+                // Disease-specific recommendations
+                recommendations.push(`Testing recommended for ${topMatch.disease.name}`);
+            } else {
+                recommendations.push("Symptoms may indicate a common viral infection");
+                recommendations.push("Rest, hydration, and symptomatic treatment recommended");
+                recommendations.push("Consult healthcare provider if symptoms persist or worsen");
+            }
+            
+            // General recommendations based on symptoms
+            if (patientData.temperature > 38.5) {
+                recommendations.push("Use fever-reducing medications as directed");
+            }
+            
+            if (patientData.plateletCount < 150) {
+                recommendations.push("Avoid activities that may cause bleeding or bruising");
+            }
+            
+            return recommendations;
+        }
+
+        // Display loading state
+        function showLoadingState() {
+            emptyState.style.display = 'none';
+            resultsPanel.style.display = 'block';
+            resultsPanel.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="loading-spinner" id="loadingSpinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5 class="mt-3">Analyzing Symptoms...</h5>
+                            <p>Our AI is evaluating the patient's symptoms and risk factors</p>
+                            
+                            <div class="analysis-step mt-4">
+                                <div class="d-flex justify-content-between">
+                                    <span>Collecting symptom data</span>
+                                    <i class="fas fa-check text-success"></i>
+                                </div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-step">
+                                <div class="d-flex justify-content-between">
+                                    <span>Matching with disease patterns</span>
+                                    <i class="fas fa-spinner fa-spin text-primary"></i>
+                                </div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-step">
+                                <div class="d-flex justify-content-between">
+                                    <span>Calculating risk assessment</span>
+                                    <i class="fas fa-clock text-muted"></i>
+                                </div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display results
+        function displayResults(patientData, analysis) {
+            const riskLevelClass = `risk-${analysis.riskLevel}`;
+            const riskLevelText = analysis.riskLevel.charAt(0).toUpperCase() + analysis.riskLevel.slice(1);
+            
+            let matchesHTML = '';
+            if (analysis.matches.length > 0) {
+                analysis.matches.forEach(match => {
+                    const criticalFlag = match.critical ? '<span class="badge bg-danger ms-2">Critical</span>' : '';
+                    matchesHTML += `
+                        <div class="disease-match">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>${match.disease.name} ${criticalFlag}</h5>
+                                <span class="badge bg-primary">${Math.round(match.matchPercentage)}% Match</span>
+                            </div>
+                            <p class="mb-2">${match.disease.description}</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Common Symptoms:</strong>
+                                    <div class="mt-1">
+                                        ${match.disease.commonSymptoms.map(symptom => 
+                                            `<span class="symptom-tag ${patientData.symptoms.includes(symptom) ? 'bg-success text-white' : ''}">${formatSymptomName(symptom)}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Risk Factors:</strong>
+                                    <div class="mt-1">
+                                        ${match.disease.riskFactors.map(risk => 
+                                            `<span class="symptom-tag ${patientData.riskFactors.includes(risk) ? 'bg-warning' : ''}">${formatRiskName(risk)}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <strong>Treatment:</strong> ${match.disease.treatment}
+                            </div>
+                            <div class="mt-1">
+                                <strong>Urgency:</strong> ${match.disease.urgency}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                matchesHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No specific disease pattern identified. Symptoms may indicate a common viral infection.
+                    </div>
+                `;
+            }
+            
+            let symptomsHTML = '';
+            patientData.symptoms.forEach(symptom => {
+                symptomsHTML += `<span class="symptom-tag bg-primary text-white">${formatSymptomName(symptom)}</span>`;
+            });
+            
+            let riskFactorsHTML = '';
+            patientData.riskFactors.forEach(risk => {
+                riskFactorsHTML += `<span class="symptom-tag bg-warning">${formatRiskName(risk)}</span>`;
+            });
+            
+            resultsPanel.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-diagnoses me-2"></i>Triage Results</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Risk Level -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="${riskLevelClass} risk-level">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    ${riskLevelText} Risk Level
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Summary -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>Patient Summary
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Temperature:</strong><br>
+                                        <span class="h5 ${patientData.temperature > 38.5 ? 'text-danger' : ''}">${patientData.temperature}°C</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Fever Duration:</strong><br>
+                                        <span class="h5">${patientData.durationDays} days</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Platelet Count:</strong><br>
+                                        <span class="h5 ${patientData.plateletCount < 150 ? 'text-warning' : ''}">${patientData.plateletCount} x10³/μL</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Age:</strong><br>
+                                        <span class="h5">${patientData.age || 'Not specified'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Symptoms & Risk Factors -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Symptoms Identified</h6>
+                                <div>${symptomsHTML || '<span class="text-muted">No symptoms selected</span>'}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Risk Factors</h6>
+                                <div>${riskFactorsHTML || '<span class="text-muted">No risk factors identified</span>'}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diagnosis Matches -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-stethoscope me-2"></i>Potential Diagnoses
+                                </h5>
+                                ${matchesHTML}
+                            </div>
+                        </div>
+                        
+                        <!-- Recommendations -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card diagnosis-card">
+                                    <div class="card-body">
+                                        <h5 class="text-primary">
+                                            <i class="fas fa-clipboard-list me-2"></i>Recommendations
+                                        </h5>
+                                        <ul class="mb-0">
+                                            ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to format symptom names for display
+        function formatSymptomName(symptom) {
+            const names = {
+                headache: "Headache",
+                bodyPain: "Body Pain",
+                rash: "Skin Rash",
+                nauseaVomiting: "Nausea/Vomiting",
+                breathingDifficulty: "Breathing Difficulty",
+                jointPain: "Joint Pain",
+                fatigue: "Fatigue",
+                bleeding: "Bleeding"
+            };
+            return names[symptom] || symptom;
+        }
+
+        // Helper function to format risk factor names for display
+        function formatRiskName(risk) {
+            const names = {
+                travelHistory: "Recent Travel",
+                mosquitoExposure: "Mosquito Exposure",
+                contactWithSick: "Contact with Sick",
+                chronicDisease: "Chronic Disease"
+            };
+            return names[risk] || risk;
+        }
+
+        // Demo cases
+        function loadDemoCase(caseType) {
+            // Reset form
+            patientForm.reset();
+            
+            // Set default values based on case type
+            switch(caseType) {
+                case 'dengue':
+                    document.getElementById('temperature').value = 39.2;
+                    document.getElementById('durationDays').value = 3;
+                    document.getElementById('plateletCount').value = 85;
+                    document.getElementById('headache').checked = true;
+                    document.getElementById('bodyPain').checked = true;
+                    document.getElementById('rash').checked = true;
+                    document.getElementById('nauseaVomiting').checked = true;
+                    document.getElementById('fatigue').checked = true;
+                    document.getElementById('mosquitoExposure').checked = true;
+                    break;
+                    
+                case 'malaria':
+                    document.getElementById('temperature').value = 39.8;
+                    document.getElementById('durationDays').value = 2;
+                    document.getElementById('plateletCount').value = 120;
+                    document.getElementById('headache').checked = true;
+                    document.getElementById('bodyPain').checked = true;
+                    document.getElementById('nauseaVomiting').checked = true;
+                    document.getElementById('fatigue').checked = true;
+                    document.getElementById('mosquitoExposure').checked = true;
+                    document.getElementById('travelHistory').checked = true;
+                    break;
+                    
+                case 'covid':
+                    document.getElementById('temperature').value = 38.5;
+                    document.getElementById('durationDays').value = 5;
+                    document.getElementById('plateletCount').value = 180;
+                    document.getElementById('headache').checked = true;
+                    document.getElementById('bodyPain').checked = true;
+                    document.getElementById('fatigue').checked = true;
+                    document.getElementById('breathingDifficulty').checked = true;
+                    document.getElementById('contactWithSick').checked = true;
+                    break;
+            }
+            
+            // Run assessment
+            runTriageAssessment();
+        }
+    </script>
+</body>
+</html>
